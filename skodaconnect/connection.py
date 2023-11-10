@@ -1201,6 +1201,7 @@ class Connection:
         try:
             await self.set_token('connect')
             response = await self.get(f'https://api.connect.skoda-auto.cz/api/v1/air-conditioning/{vin}/timers')
+
             if response.get('timers', []):
                 data = {'timers': response.get('timers', [])}
                 return data
@@ -1210,6 +1211,22 @@ class Connection:
                 _LOGGER.info('Unhandled error while trying to fetch timers data')
         except Exception as error:
             _LOGGER.warning(f'Could not fetch timers, error: {error}')
+        return False
+
+    async def getChargingProfiles(self, vin):
+        """Get charging profiles data (New Skoda API)."""
+        try:
+            await self.set_token('connect')
+            response = await self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/profiles')
+            if response.get('profiles', []):
+                data = {'profiles': response.get('profiles', [])}
+                return data
+            elif response.get('status_code', False):
+                _LOGGER.warning(f'Could not fetch charging profiles, HTTP status code: {response.get("status_code")}')
+            else:
+                _LOGGER.info('Unhandled error while trying to fetch charging profiles data')
+        except Exception as error:
+            _LOGGER.warning(f'Could not fetch charging profiles, error: {error}')
         return False
 
     async def getClimater(self, vin):
