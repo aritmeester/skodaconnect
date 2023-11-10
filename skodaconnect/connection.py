@@ -1201,7 +1201,6 @@ class Connection:
         try:
             await self.set_token('connect')
             response = await self.get(f'https://api.connect.skoda-auto.cz/api/v1/air-conditioning/{vin}/timers')
-
             if response.get('timers', []):
                 data = {'timers': response.get('timers', [])}
                 return data
@@ -1288,8 +1287,6 @@ class Connection:
             chargerSettings = self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/settings')
             chargingProfiles = self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/profiles')
             chargingData = await asyncio.gather(chargerStatus, chargerSettings, chargerMode, chargingProfiles)
-
-            _LOGGER.debug(f'Charging data: {chargingData[3].get('profiles', [])}')
 
             if chargingData[0].get('battery', {}) or chargingData[1].get('maxChargeCurrentAc', {}):
                 response = chargingData[0]
