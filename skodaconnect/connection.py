@@ -1213,22 +1213,6 @@ class Connection:
             _LOGGER.warning(f'Could not fetch timers, error: {error}')
         return False
 
-    async def getChargingProfiles(self, vin):
-        """Get charging profiles data (New Skoda API)."""
-        try:
-            await self.set_token('connect')
-            response = await self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/profiles')
-            if response.get('profiles', []):
-                data = {'profiles': response.get('profiles', [])}
-                return data
-            elif response.get('status_code', False):
-                _LOGGER.warning(f'Could not fetch charging profiles, HTTP status code: {response.get("status_code")}')
-            else:
-                _LOGGER.info('Unhandled error while trying to fetch charging profiles data')
-        except Exception as error:
-            _LOGGER.warning(f'Could not fetch charging profiles, error: {error}')
-        return False
-
     async def getClimater(self, vin):
         """Get climatisation data."""
         try:
@@ -1302,7 +1286,10 @@ class Connection:
             chargerMode = self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/mode')
             chargerStatus = self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/status')
             chargerSettings = self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/settings')
-            chargingData = await asyncio.gather(chargerStatus, chargerSettings, chargerMode)
+            chargingProfiles = self.get(f'https://api.connect.skoda-auto.cz/api/v1/charging/{vin}/profiles')
+            chargingData = await asyncio.gather(chargerStatus, chargerSettings, chargerMode, chargingProfiles)
+
+            _LOGGER.debug(f'Charging data: {chargingData[3].get('profiles', [])}')
 
             if chargingData[0].get('battery', {}) or chargingData[1].get('maxChargeCurrentAc', {}):
                 response = chargingData[0]
